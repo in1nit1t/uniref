@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uniref"
+version = "0.1.0"
+authors = [
+  { name="in1t", email="in1t@foxmail.com" },
+]
+description = "Unity reflection framework"
+readme = "README.en.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+keywords = ["Unity", "mono", "il2cpp", "reflection", "patch"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+]
+dependencies = [
+    "pywin32",
+    "capstone",
+    "keystone-engine",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/in1nit1t/uniref"
+"Bug Tracker" = "https://github.com/in1nit1t/uniref/issues"
+
+[tool.setuptools.package-data]
+"uniref.bin.win" = ["*"]
