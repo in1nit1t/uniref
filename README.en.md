@@ -38,6 +38,8 @@ print(f"default speed: {movement_speed.value}")
 movement_speed.value = 20.0
 ```
 
+For more information please refer to the [documentation](uniref.rtfd.io). 
+
 ## Next Step
 
 Support Android platform
