@@ -89,58 +89,63 @@ class _PyMemoryScanner:
 
 
 class CMemoryScanner:
-    _util = cdll.LoadLibrary(str(Path(os.path.abspath(__file__)).parent.parent / "bin/win/util64.dll"))
-
-    _SearchChar = _util.SearchChar
-    _SearchChar.argtypes = [c_uint32, c_byte, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchChar.restype = c_uint64
-
-    _SearchUChar = _util.SearchUChar
-    _SearchUChar.argtypes = [c_uint32, c_ubyte, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchUChar.restype = c_uint64
-
-    _SearchInt16 = _util.SearchInt16
-    _SearchInt16.argtypes = [c_uint32, c_int16, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchInt16.restype = c_uint64
-
-    _SearchUInt16 = _util.SearchUInt16
-    _SearchUInt16.argtypes = [c_uint32, c_uint16, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchUInt16.restype = c_uint64
-
-    _SearchInt32 = _util.SearchInt32
-    _SearchInt32.argtypes = [c_uint32, c_int32, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchInt32.restype = c_uint64
-
-    _SearchUInt32 = _util.SearchUInt32
-    _SearchUInt32.argtypes = [c_uint32, c_uint32, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchUInt32.restype = c_uint64
-
-    _SearchInt64 = _util.SearchInt64
-    _SearchInt64.argtypes = [c_uint32, c_int64, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchInt64.restype = c_uint64
-
-    _SearchUInt64 = _util.SearchUInt64
-    _SearchUInt64.argtypes = [c_uint32, c_uint64, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchUInt64.restype = c_uint64
-
-    _SearchFloat = _util.SearchFloat
-    _SearchFloat.argtypes = [c_uint32, c_float, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchFloat.restype = c_uint64
-
-    _SearchDouble = _util.SearchDouble
-    _SearchDouble.argtypes = [c_uint32, c_double, c_bool, c_uint64, c_uint64, c_void_p]
-    _SearchDouble.restype = c_uint64
-
-    _ResFree = _util.ResFree
-    _ResFree.argtypes = [c_void_p]
 
     def __init__(self, pid: int, bit_long: int) -> None:
         self._process_id = pid
         self._bit_long = bit_long
         self._injector = WinInjector()
+        self._init_proc()
+    
+    def _init_proc(self):
+        _util = cdll.LoadLibrary(str(Path(os.path.abspath(__file__)).parent.parent / "bin/win/util64.dll"))
+
+        self._SearchChar = _util.SearchChar
+        self._SearchChar.argtypes = [c_uint32, c_byte, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchChar.restype = c_uint64
+
+        self._SearchUChar = _util.SearchUChar
+        self._SearchUChar.argtypes = [c_uint32, c_ubyte, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchUChar.restype = c_uint64
+
+        self._SearchInt16 = _util.SearchInt16
+        self._SearchInt16.argtypes = [c_uint32, c_int16, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchInt16.restype = c_uint64
+
+        self._SearchUInt16 = _util.SearchUInt16
+        self._SearchUInt16.argtypes = [c_uint32, c_uint16, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchUInt16.restype = c_uint64
+
+        self._SearchInt32 = _util.SearchInt32
+        self._SearchInt32.argtypes = [c_uint32, c_int32, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchInt32.restype = c_uint64
+
+        self._SearchUInt32 = _util.SearchUInt32
+        self._SearchUInt32.argtypes = [c_uint32, c_uint32, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchUInt32.restype = c_uint64
+
+        self._SearchInt64 = _util.SearchInt64
+        self._SearchInt64.argtypes = [c_uint32, c_int64, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchInt64.restype = c_uint64
+
+        self._SearchUInt64 = _util.SearchUInt64
+        self._SearchUInt64.argtypes = [c_uint32, c_uint64, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchUInt64.restype = c_uint64
+
+        self._SearchFloat = _util.SearchFloat
+        self._SearchFloat.argtypes = [c_uint32, c_float, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchFloat.restype = c_uint64
+
+        self._SearchDouble = _util.SearchDouble
+        self._SearchDouble.argtypes = [c_uint32, c_double, c_bool, c_uint64, c_uint64, c_void_p]
+        self._SearchDouble.restype = c_uint64
+
+        self._ResFree = _util.ResFree
+        self._ResFree.argtypes = [c_void_p]
+
+        self._util = _util
 
     def _res_free(self, ptr: int):
-        CMemoryScanner._ResFree(ptr)
+        self._ResFree(ptr)
 
     def _do_scan(self, elem_type: int, target: Any, writeable: bool, va_start: int = 0, va_end: int = -1):
         if va_end <= 0:
@@ -151,25 +156,25 @@ class CMemoryScanner:
             raise ValueError("va_start > va_end")
 
         if elem_type == TYPE_CHAR:
-            scan_func = CMemoryScanner._SearchChar
+            scan_func = self._SearchChar
         elif elem_type == TYPE_UCHAR:
-            scan_func = CMemoryScanner._SearchUChar
+            scan_func = self._SearchUChar
         elif elem_type == TYPE_INT16:
-            scan_func = CMemoryScanner._SearchInt16
+            scan_func = self._SearchInt16
         elif elem_type == TYPE_UINT16:
-            scan_func = CMemoryScanner._SearchUInt16
+            scan_func = self._SearchUInt16
         elif elem_type == TYPE_INT32:
-            scan_func = CMemoryScanner._SearchInt32
+            scan_func = self._SearchInt32
         elif elem_type == TYPE_UINT32:
-            scan_func = CMemoryScanner._SearchUInt32
+            scan_func = self._SearchUInt32
         elif elem_type == TYPE_INT64:
-            scan_func = CMemoryScanner._SearchInt64
+            scan_func = self._SearchInt64
         elif elem_type == TYPE_UINT64:
-            scan_func = CMemoryScanner._SearchUInt64
+            scan_func = self._SearchUInt64
         elif elem_type == TYPE_FLOAT:
-            scan_func = CMemoryScanner._SearchFloat
+            scan_func = self._SearchFloat
         elif elem_type == TYPE_DOUBLE:
-            scan_func = CMemoryScanner._SearchDouble
+            scan_func = self._SearchDouble
         else:
             raise ValueError("Element type unsupported")
         res = c_void_p()

@@ -3,6 +3,7 @@ from typing import *
 from functools import wraps
 from platform import architecture
 
+from ctypes import windll
 from uniref.define.struct import *
 from uniref.define.constant import *
 
