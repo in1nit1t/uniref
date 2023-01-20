@@ -52,6 +52,5 @@ movement_speed.value = 20.0
 
 [GNU Affero General Public License v3.0](https://github.com/in1nit1t/uniref/blob/main/LICENSE)
 
-------
 
 [^1]: 如果目标进程是以管理员权限启动的，那么请保证本框架运行在管理员权限下。即必要时，需要使用管理员权限运行 Python。

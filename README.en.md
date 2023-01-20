@@ -52,6 +52,5 @@ If you are interested in improving this framework together, you are welcome to s
 
 [GNU Affero General Public License v3.0](https://github.com/in1nit1t/uniref/blob/main/LICENSE)
 
-------
 
 [^1]: If the target process is started with administrator privileges, please ensure that the framework runs under administrator privileges. That is, Python needs to be run with administrator privileges when necessary.
