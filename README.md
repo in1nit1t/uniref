@@ -38,7 +38,7 @@ print(f"default speed: {movement_speed.value}")
 movement_speed.value = 20.0
 ```
 
-请参阅 [文档]((uniref.rtfd.io)) 以了解更多信息 。
+请参阅 [文档](uniref.rtfd.io) 以了解更多信息 。
 
 ## 下一步计划
 
