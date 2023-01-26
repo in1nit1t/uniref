@@ -23,7 +23,7 @@ def show_my_position(ref: WinUniRef):
 
     LocalPlayer = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.LocalPlayer")
     try:
-        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x3C79808, 0xB8, 0])
+        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x3C6B510, 0xB8, 0])
     except:
         print(error_hint)
         exit(-1)
@@ -35,7 +35,7 @@ def show_my_position(ref: WinUniRef):
     assert player_controller_instance > 0, error_hint
     PlayerController.instance = player_controller_instance
 
-    position = PlayerController.find_field_by_offset(0x2c8)
+    position = PlayerController.find_field_by_offset(0x2D8)
     assert position.type_name == "UnityEngine.Vector3", "Error field offset due to game update"
 
     pos_value = []
