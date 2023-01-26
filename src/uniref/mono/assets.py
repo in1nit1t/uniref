@@ -350,7 +350,7 @@ il2cpp_native_func_property = {
     "il2cpp_string_chars": (1, TYPE_VOID_P),
 }
 
-type_map = {
+cs_type_map = {
     "System.Void": TYPE_VOID,
     "System.Boolean": TYPE_BOOL,
     "System.SByte": TYPE_CHAR,
@@ -365,4 +365,39 @@ type_map = {
     "System.Double": TYPE_DOUBLE,
     "System.String": TYPE_CS_STRING,
     "System.Decimal": -1,
+}
+
+frida_type_map = {
+    TYPE_BOOL: "uint8",
+    TYPE_CHAR: "int8",
+    TYPE_UCHAR: "uint8",
+    TYPE_INT16: "int16",
+    TYPE_UINT16: "uint16",
+    TYPE_INT32: "int32",
+    TYPE_UINT32: "uint32",
+    TYPE_INT64: "int64",
+    TYPE_UINT64: "uint64",
+    TYPE_FLOAT: "float",
+    TYPE_DOUBLE: "double",
+    TYPE_VOID_P: "pointer",
+    TYPE_CHAR_P: "pointer",
+    TYPE_CS_STRING: "pointer",
+}
+
+protection_map = {
+    "---": PAGE_NOACCESS,
+    "r--": PAGE_READONLY,
+    "rw-": PAGE_READWRITE,
+    "--x": PAGE_EXECUTE,
+    "r-x": PAGE_EXECUTE_READ,
+    "rwx": PAGE_EXECUTE_READWRITE,
+}
+
+protection_rev_map = {
+    PAGE_NOACCESS: "---",
+    PAGE_READONLY: "r--",
+    PAGE_READWRITE: "rw-",
+    PAGE_EXECUTE: "--x",
+    PAGE_EXECUTE_READ: "r-x",
+    PAGE_EXECUTE_READWRITE: "rwx",
 }

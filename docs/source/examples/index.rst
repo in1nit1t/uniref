@@ -15,4 +15,6 @@ Windows
 Android
 =================================
 
-开发中...
+.. toctree::
+
+    android

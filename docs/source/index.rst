@@ -8,7 +8,10 @@ uniref 是一个辅助分析 Unity 应用的框架。它可以帮助您获取 Un
 uniref 同时支持 ``Mono`` 和 ``IL2CPP`` 两种脚本后端（Unity scripting backend）。
 
 .. note::
-    目前 uniref 支持分析 Windows x86 64 位操作系统上运行的 32 / 64 位 Unity 应用
+    目前 uniref 支持分析:
+
+    - Windows x86 64 位操作系统上运行的 32 / 64 位 Unity 应用
+    - Android ARM 架构上运行的 32 / 64 位 Unity 应用
 
 
 安装
@@ -47,6 +50,15 @@ uniref 需要 Python 3.7+（64 位）的运行环境，您可以通过 pip 完�
 
     # 修改成员变量的值
     movement_speed.value = 20.0
+
+
+运行
+------------
+
+对于 Windows 应用（exe），直接运行 Python 脚本即可，无需其他操作。
+
+对于 Android 应用（apk），需要保证 frida 已可以在您的设备上工作。
+最常用的方法是在设备上运行 frida-server，其他方式详见 `frida官方文档 <https://frida.re/docs/modes/>`_ 。
 
 
 .. toctree::

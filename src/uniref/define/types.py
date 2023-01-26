@@ -1,7 +1,5 @@
 from typing import *
 
-from uniref.define.constant import PAGE_READWRITE
-
 
 class _BasicType:
     """ Base class of ``Bool``, ``Char``, ``UChar``, ``Int16``, ``UInt16``, ``Int32``, ``UInt32``,
@@ -32,7 +30,7 @@ class _BasicType:
         self._elem_size = elem_size
         self._auto_release = auto_release
 
-        self._address = self._injector.mem_alloc(alloc_size=elem_size, page_prot=PAGE_READWRITE)
+        self._address = self._injector.mem_alloc(alloc_size=elem_size, protection="rw-")
         self._assign_value()
 
     def __del__(self):
@@ -79,9 +77,6 @@ class _BasicType:
         if self._address == 0:
             raise MemoryError(f"Memory has been freed")
         self._do_write(self._address, self._value)
-
-    def cast_to(self) -> Any:
-        raise NotImplementedError
 
     def release(self) -> None:
         """ Release the memory. """
@@ -180,14 +175,11 @@ class Double(_BasicType):
 
 class Pointer(_BasicType):
 
-    def __new__(cls, injector: object, value: int, auto_release: bool = True):
-        bit_long = injector.bit_long
-        if bit_long == 32:
-            return UInt32(injector, value, auto_release)
-        elif bit_long == 64:
-            return UInt64(injector, value, auto_release)
-        else:
-            raise NotImplementedError(f"{bit_long}-bits not supported")
+    def __init__(self, injector: object, value: int, auto_release: bool = True):
+        self._do_read = injector.mem_read_pointer
+        self._do_write = injector.mem_write_pointer
+        elem_size = 4 if injector.bit_long == 32 else 8
+        super(Pointer, self).__init__(injector, value, elem_size, auto_release)
 
 
 class _ArrayType:
@@ -241,7 +233,7 @@ class _ArrayType:
         if address > 0:
             self._address = address
         else:
-            self._address = self._injector.mem_alloc(alloc_size=elem_size * elem_count, page_prot=PAGE_READWRITE)
+            self._address = self._injector.mem_alloc(alloc_size=elem_size * elem_count, protection="rw-")
 
         self._elements = elements
         self._elem_count = elem_count
@@ -504,21 +496,19 @@ class DoubleArray(_ArrayType):
 
 class PointerArray(_ArrayType):
 
-    def __new__(
-            cls,
+    def __init__(
+            self,
             injector: object,
             address: int = 0,
             element_count: int = 0,
             elements: Optional[List[int]] = None,
             auto_release: bool = True
     ):
-        bit_long = injector.bit_long
-        if bit_long == 32:
-            return UInt32Array(injector, address, element_count, elements, auto_release)
-        elif bit_long == 64:
-            return UInt64Array(injector, address, element_count, elements, auto_release)
-        else:
-            raise NotImplementedError(f"{bit_long}-bits not supported")
+        address &= 0xFFFFFFFFFFFF
+        self._do_read = injector.mem_read_pointer
+        self._do_write = injector.mem_write_pointer
+        elem_size = 4 if injector.bit_long == 32 else 8
+        super(PointerArray, self).__init__(injector, elem_size, address, element_count, elements, auto_release)
 
 
 class CString:
@@ -529,7 +519,7 @@ class CString:
         self._value = value
         self._auto_release = auto_release
 
-        self._address = self._injector.mem_alloc(alloc_size=len(value) + 1, page_prot=PAGE_READWRITE)
+        self._address = self._injector.mem_alloc(alloc_size=len(value) + 1, protection="rw-")
         self._assign_value()
 
     def __del__(self):

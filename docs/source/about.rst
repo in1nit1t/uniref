@@ -11,25 +11,26 @@ uniref 是一个辅助分析 Unity 应用的框架。它可以帮助您获取 Un
 
 uniref 同时支持 Mono 和 IL2CPP 两种脚本后端（Unity scripting backend）。
 
-在 Windows x86 64 位平台下，大部分基于 C# 开发的 Unity 应用都可以使用 uniref 来获取反射信息。
+在 Windows x86 64 位与 Android ARM 平台下，大部分基于 C# 开发的 Unity 应用都可以使用 uniref 来获取反射信息。
 
 
 实现方式
 -----------------
 
-在指定一个进程来实例化 WinUniRef 类时，uniref 会尝试从目标进程的所有已加载模块中找到 Mono / IL2CPP 相关模块，
+在指定一个进程来实例化 XXXUniRef 类时，uniref 会尝试从目标进程的所有已加载模块中找到 Mono / IL2CPP 相关模块，
 并从中收集一些用于获取关键信息的导出函数。
 
-在找到这些函数后，uniref 会创建远程线程并按照一定的组合顺序在目标进程中调用它们。之后便是收集并处理返回值，以用户友好的形式将反射信息呈现给开发者。
+在找到这些函数后，uniref 会按照一定的组合顺序在目标进程中调用它们。之后便是收集并处理返回值，以用户友好的形式将反射信息呈现给开发者。
 
-由于远程线程的某些特性，uniref 提供的一些 API 调用可能会失败。最坏的情况下，可能会导致应用 crash。
+由于远程线程的某些特性，WinUniRef 提供的一些 API 调用可能会失败。最坏的情况下，可能会导致应用 crash。
 如果您遇到这种情况，烦请在 `Issues <https://github.com/in1nit1t/uniref/issues>`_ 页面提交报告，并描述机器环境与错误复现步骤，这边将尽力提升框架的兼容性与稳定性。
+
+另外，uniref 在 Android 平台上基于 `frida <https://frida.re>`_ 完成进程注入，因此您的设备可能需要 root 权限来执行 frida-server。
 
 
 下一步计划
 -----------------
 
-- 支持分析 Android 平台 Unity 应用
 - 鉴于 Windows 平台上远程线程的不稳定因素，考虑更换另一种进程注入方式
 
 

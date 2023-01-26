@@ -322,7 +322,7 @@ class MonoMethod:
         self._address = 0
 
     def __call__(self, args: Optional[Tuple[int]] = None, call_type: int = CALL_TYPE_THISCALL) -> Any:
-        ret_type = type_map.get(self.return_type_name, TYPE_VOID_P)
+        ret_type = cs_type_map.get(self.return_type_name, TYPE_VOID_P)
         if ret_type == -1:
             raise NotImplementedError("System.Decimal")
         if self._instance == 0 and not self.is_static():
@@ -454,7 +454,7 @@ class MonoMethod:
         :param size: nop size in bytes
         :return: ``NativePatch`` instance
         """
-        return self.native_patch(offset, b'\x90' * size)
+        return self._mono_injector.code_nop(self.address + offset, size)
 
 
 class MonoClass:
@@ -571,7 +571,7 @@ class MonoClass:
                 method.set_instance(self._instance)
         return methods
 
-    def find_method(self, method_name: str, param_count: int = - 1) -> Optional[MonoMethod]:
+    def find_method(self, method_name: str, param_count: int = -1) -> Optional[MonoMethod]:
         """ Find the method in the class.
 
         If there are different overloads of a method in the same class,

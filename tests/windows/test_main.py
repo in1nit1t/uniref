@@ -6,7 +6,7 @@ from mono_injector import *
 def test_main() -> None:
     util_suite = TestSuite()
     util_loader = TestLoader()
-    util_suite.addTest(util_loader.loadTestsFromTestCase(InjectorTest))
+    util_suite.addTest(util_loader.loadTestsFromTestCase(WinInjectorTest))
     util_suite.addTest(util_loader.loadTestsFromTestCase(CMemoryScannerTest))
 
     mono_suite = TestSuite()

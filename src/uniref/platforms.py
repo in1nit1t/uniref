@@ -1,30 +1,10 @@
 """ This module holds the uniref top-level classes for all supported platforms """
 
 from uniref.mono.component import *
-from uniref.mono.injector import WinMonoInjector
+from uniref.mono.injector import WinMonoInjector, AndroidMonoInjector
 
 
-class WinUniRef:
-    """ The uniref top-level class for ``Windows``.
-
-    :param exe_filename: target application exe filename
-    :param process_id: process id
-
-    Examples:
-
-    >>> ref = WinUniRef("TheForest.exe")
-    >>> ref = WinUniRef(process_id=1234)
-
-    """
-    def __init__(self, exe_filename: str = '', process_id: int = 0) -> None:
-        if not exe_filename and not process_id:
-            raise ValueError("Please specify the exe file name or process id")
-        self._mono_injector = WinMonoInjector(exe_filename, process_id)
-
-    @property
-    def pid(self) -> int:
-        """ target process id """
-        return self._mono_injector.process_id
+class _UniRef:
 
     @property
     def injector(self) -> WinMonoInjector:
@@ -32,40 +12,40 @@ class WinUniRef:
         return self._mono_injector
 
     @property
-    def process_handle(self) -> int:
-        """ target process handle """
-        return self._mono_injector.process_handle
+    def pid(self) -> int:
+        """ target process id """
+        return self.injector.process_id
 
     @property
     def mono_module_handle(self) -> int:
         """ target process mono / il2cpp module handle """
-        return self._mono_injector.h_mono
+        return self.injector.h_mono
 
     @property
     def root_domain(self) -> int:
         """ target process root application domain """
-        return self._mono_injector.root_domain
+        return self.injector.root_domain
 
     def use_il2cpp(self) -> bool:
         """ Check if target process uses the ``IL2CPP`` scripting backend.
 
         :return: ``False`` if target process uses the ``Mono`` scripting backend, else ``True``.
         """
-        return self._mono_injector.use_il2cpp
+        return self.injector.use_il2cpp
 
     def list_assemblies(self) -> List[MonoAssembly]:
         """ List all assemblies in the application. """
-        return self._mono_injector.enum_assemblies()
+        return self.injector.enum_assemblies()
 
     def get_assembly_image(self, assembly: MonoAssembly) -> MonoImage:
         """ Get the image of the specified assembly. """
         if not isinstance(assembly, MonoAssembly):
             raise TypeError("assembly should be MonoAssembly")
-        return self._mono_injector.get_assembly_image(assembly.handle)
+        return self.injector.get_assembly_image(assembly.handle)
 
     def list_images(self) -> List[MonoImage]:
         """ List all images in the application. """
-        return self._mono_injector.enum_images()
+        return self.injector.enum_images()
 
     def find_image_by_name(self, image_name: str) -> Optional[MonoImage]:
         """ Find the image by image name.
@@ -74,13 +54,13 @@ class WinUniRef:
         """
         if not isinstance(image_name, str):
             raise TypeError("image_name should be str")
-        return self._mono_injector.find_image_by_name(image_name)
+        return self.injector.find_image_by_name(image_name)
 
     def list_classes_in_image(self, image: MonoImage) -> List[MonoClass]:
         """ List all classes in the image. """
         if not isinstance(image, MonoImage):
             raise TypeError("image should be MonoImage")
-        return self._mono_injector.enum_classes_in_image(image.handle)
+        return self.injector.enum_classes_in_image(image.handle)
 
     def find_class_in_image(self, image_name: str, class_path: str) -> Optional[MonoClass]:
         """ Find the class in the image.
@@ -117,14 +97,14 @@ class WinUniRef:
                 class_namespace = ''
                 class_name = class_path
             class_name = class_name.replace('+', '/')
-            return self._mono_injector.find_class_in_image(image.handle, class_namespace, class_name)
+            return self.injector.find_class_in_image(image.handle, class_namespace, class_name)
         return None
 
     def list_fields_in_class(self, klass: MonoClass) -> List[MonoField]:
         """ List all fields in the class. """
         if not isinstance(klass, MonoClass):
             raise TypeError("klass should be MonoClass")
-        fields = self._mono_injector.enum_fields_in_class(klass.handle)
+        fields = self.injector.enum_fields_in_class(klass.handle)
         instance = klass.instance
         if instance > 0:
             for field in fields:
@@ -140,7 +120,7 @@ class WinUniRef:
             raise TypeError("klass should be MonoClass")
         if not isinstance(field_name, str):
             raise TypeError("field_name should be str")
-        field = self._mono_injector.find_field_in_class(klass.handle, field_name)
+        field = self.injector.find_field_in_class(klass.handle, field_name)
         if field:
             if klass.instance > 0:
                 field.set_instance(klass.instance)
@@ -150,7 +130,7 @@ class WinUniRef:
         """ List all methods in the class. """
         if not isinstance(klass, MonoClass):
             raise TypeError("klass should be MonoClass")
-        methods = self._mono_injector.enum_methods_in_class(klass.handle)
+        methods = self.injector.enum_methods_in_class(klass.handle)
         instance = klass.instance
         if instance > 0:
             for method in methods:
@@ -171,8 +151,66 @@ class WinUniRef:
             raise TypeError("method_name should be str")
         if not isinstance(param_count, int):
             raise TypeError("param_count should be int")
-        method = self._mono_injector.find_method_in_class(klass.handle, method_name, param_count)
+        method = self.injector.find_method_in_class(klass.handle, method_name, param_count)
         if method:
             if klass.instance > 0:
                 method.set_instance(klass.instance)
             return method
+
+
+class WinUniRef(_UniRef):
+    """ The uniref top-level class for ``Windows``.
+
+    :param exe_filename: target application exe filename
+    :param process_id: process id
+
+    Examples:
+
+    >>> ref = WinUniRef("TheForest.exe")
+    >>> ref = WinUniRef(process_id=1234)
+
+    """
+    def __init__(self, exe_filename: str = '', process_id: int = 0) -> None:
+        if not exe_filename and not process_id:
+            raise ValueError("Please specify the exe file name or process id")
+        self._mono_injector = WinMonoInjector(exe_filename, process_id)
+
+    @property
+    def process_handle(self) -> int:
+        """ target process handle """
+        return self.injector.process_handle
+
+
+class AndroidUniRef(_UniRef):
+    """ The uniref top-level class for ``Android``.
+
+    :param process_name: the process name of the target application, you can get it by ``frida-ps``
+    :param package_name: the package name of the target application
+    :param device_id: specify the device id, you can get it by ``adb devices``
+
+    Examples:
+
+    .. code-block:: python
+
+        # automatically attach the frontmost application & device
+        ref = AndroidUniRef()
+
+        # attach the application by its process name (automatically select device)
+        ref = AndroidUniRef(process_name="My App")
+
+        # attach the application by its package name (automatically select device)
+        ref = AndroidUniRef(package_name="com.test.my_app")
+
+        # attach the application on the specified device
+        ref = AndroidUniRef(device_id="12a34b5")
+        ref = AndroidUniRef(process_name="My App", device_id="12a34b5")
+        ref = AndroidUniRef(package_name="com.test.my_app", device_id="12a34b5")
+
+    """
+    def __init__(
+        self,
+        process_name: Optional[str] = None,
+        package_name: Optional[str] = None,
+        device_id: Optional[str] = None
+    ) -> None:
+        self._mono_injector = AndroidMonoInjector(process_name, package_name, device_id)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uniref"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
   { name="in1t", email="in1t@foxmail.com" },
 ]
@@ -12,7 +12,7 @@ description = "Unity reflection framework"
 readme = "README.md"
 requires-python = ">=3.7"
 license = {file = "LICENSE"}
-keywords = ["Unity", "mono", "il2cpp", "reflection", "patch"]
+keywords = ["Unity", "mono", "il2cpp", "reflection", "patch", "android", "windows"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -28,6 +28,8 @@ dependencies = [
     "pywin32",
     "capstone",
     "keystone-engine",
+    "frida>=15.0.0",
+    "frida-tools>=10.0.0",
 ]
 
 [project.urls]
@@ -36,3 +38,4 @@ dependencies = [
 
 [tool.setuptools.package-data]
 "uniref.bin.win" = ["*"]
+"uniref.bin.android" = ["*"]

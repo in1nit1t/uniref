@@ -38,7 +38,8 @@ class NativePatch:
 
         old_protect = self._injector.mem_set_protect(self._address, enabled_code_len)
         self._injector.mem_write_bytes(self._address, self._enabled_code)
-        self._injector.mem_set_protect(self._address, enabled_code_len, old_protect)
+        if isinstance(old_protect, str):
+            self._injector.mem_set_protect(self._address, enabled_code_len, old_protect)
 
         self._enable = True
 
@@ -51,6 +52,7 @@ class NativePatch:
 
         old_protect = self._injector.mem_set_protect(self._address, disabled_code_len)
         self._injector.mem_write_bytes(self._address, self._disabled_code)
-        self._injector.mem_set_protect(self._address, disabled_code_len, old_protect)
+        if isinstance(old_protect, str):
+            self._injector.mem_set_protect(self._address, disabled_code_len, old_protect)
 
         self._enable = False

@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath('../../src'))
 project = 'uniref'
 copyright = '2023, in1t'
 author = 'in1t'
-release = '0.1.0'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -34,4 +34,4 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 # -- autodoc settings --------------------------------------------------------
-autodoc_mock_imports = ['win32process', 'ctypes']
+autodoc_mock_imports = ['win32process', 'ctypes', 'frida']
