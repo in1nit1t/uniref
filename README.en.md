@@ -4,11 +4,19 @@
 
 You can use this framework to convert some of your analysis results into Python code, which is convenient for you to develop plug-ins for Unity applications.
 
-Uniref currently supports analyzing 32/64-bit Unity applications running on Windows x86 64-bit operating systems. Meanwhile, it supports both `Mono` and `IL2CPP` scripting backends.
+## Features
+
+- Support for obtaining reflection information through symbols
+- Support real-time acquisition and modification of class attribute values
+- Support real-time acquisition and modification of class method implementation and call class method
+- Modifications are done in memory without modifying the source file
+- Bypass some code protection mechanisms (compression, encryption, etc.) to avoid tedious reverse engineering
+- Supports analysis of `Mono` and `IL2CPP` two scripting backends
+- Supports profiling 32/64-bit Unity apps running on **Windows x86 64-bit** and **Android ARM** architecture
 
 ## Installation
 
-uniref requires Python 3.7+ (64-bit) environment, you can complete the installation through pip:
+uniref requires Windows Python 3.7+ (64-bit) operating environment, you can complete the installation through pip:
 
 ```bash
 pip install -U uniref
@@ -38,11 +46,7 @@ print(f"default speed: {movement_speed.value}")
 movement_speed.value = 20.0
 ```
 
-For more information please refer to the [documentation](https://uniref.rtfd.io). 
-
-## Next Step
-
-Support Android platform
+For Android, sample code for analyzing applications such as Temple Run, Dream Blast, etc. is given. For more information please refer to the [documentation](https://uniref.rtfd.io).
 
 ## Get Involved
 
