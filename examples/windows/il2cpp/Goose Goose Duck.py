@@ -8,22 +8,27 @@ from uniref import WinUniRef
 # 3. Function modify_speed will give you a higher speed
 # 4. Function show_my_position will print your (x, y, z) position
 
-error_hint = "Error multilevel pointer offsets due to game update"
-
 
 def modify_speed(ref: WinUniRef):
     LocalPlayer = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.LocalPlayer")
     movementSpeed = LocalPlayer.find_field("movementSpeed")
-    print(f"default speed: {movementSpeed.value}")
-    movementSpeed.value = 20.0
+    static_field = ref.injector.mem_read_pointer(LocalPlayer.vtable + 0xB8)
+
+    movementSpeed_address = static_field + movementSpeed.offset
+
+    # fight against anti-cheating mechanisms
+    ref.injector.mem_write_bool(movementSpeed_address + 0x10, False)
+    ref.injector.mem_write_float(movementSpeed_address, 20.0)
+    ref.injector.mem_write_uint32(movementSpeed_address + 4, 0)
 
 
 def show_my_position(ref: WinUniRef):
+    error_hint = "Error multilevel pointer offsets due to game update"
     game_assembly_base = ref.injector.get_module_base("GameAssembly.dll")
 
     LocalPlayer = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.LocalPlayer")
     try:
-        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x3C6B510, 0xB8, 0])
+        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x3C54E28, 0xB8, 0])
     except:
         print(error_hint)
         exit(-1)
@@ -47,5 +52,6 @@ def show_my_position(ref: WinUniRef):
 
 if __name__ == "__main__":
     ref = WinUniRef("Goose Goose Duck.exe")
+
     modify_speed(ref)
     show_my_position(ref)
