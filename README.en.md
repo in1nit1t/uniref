@@ -24,29 +24,23 @@ pip install -U uniref
 
 ## Example
 
-Below is a piece of code completed using the uniref framework, which achieves the effect of modifying the movement speed of Goose Goose Duck game characters.
-
-You can run this code [^1] in the tutorial of the game to experience `uniref`. **DO NOT use it in multiplayer mode**, it will affect the game experience of other players.
+A piece of code completed using the uniref framework is given below, which solves a reverse challenge of [MRCTF2021](https://uniref.readthedocs.io/en/latest/examples/windows.html#mrctf2021-ezgame).
 
 ```Python
 from uniref import WinUniRef
 
-# Specify the process to be analyzed
-ref = WinUniRef("Goose Goose Duck.exe")
+ref = WinUniRef("GameHack.exe")
+class_GetFlag = ref.find_class_in_image("Assembly-CSharp.dll", "Platformer.Flag.GetFlag")
+class_GetFlag.find_field("goHome").value = True
+class_GetFlag.find_field("findAlien").value = True
+class_GetFlag.find_field("eatCookie").value = True
 
-# Find class
-class_path = "Handlers.GameHandlers.PlayerHandlers.LocalPlayer"
-local_player = ref.find_class_in_image("Assembly-CSharp.dll", class_path)
-
-# Find the field in the class & print its value
-movement_speed = local_player.find_field("movementSpeed")
-print(f"default speed: {movement_speed.value}")
-
-# Modify the field value
-movement_speed.value = 20.0
+method_EatTokenUpdateKey = class_GetFlag.find_method("EatTokenUpdateKey")
+for i in range(105):
+    method_EatTokenUpdateKey()
 ```
 
-For Android, sample code for analyzing applications such as Temple Run, Dream Blast, etc. is given. For more information please refer to the [documentation](https://uniref.rtfd.io).
+[Documentation](https://uniref.readthedocs.io/en/latest/examples/index.html) also gives example code for analyzing Goose Goose Duck, The Forest, Dream Blast, Temple Run, etc.
 
 ## Get Involved
 
@@ -57,6 +51,3 @@ If you are interested in improving this framework together, you are welcome to s
 ## License
 
 [GNU Affero General Public License v3.0](https://github.com/in1nit1t/uniref/blob/main/LICENSE)
-
-
-[^1]: If the target process is started with administrator privileges, please ensure that the framework runs under administrator privileges. That is, Python needs to be run with administrator privileges when necessary.

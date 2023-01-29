@@ -25,37 +25,32 @@ uniref 需要 Python 3.7+（64 位）的运行环境，您可以通过 pip 完�
 示例
 ------------
 
-下方给出了一段使用 uniref 框架完成的代码，其实现了修改鹅鸭杀游戏人物移速的效果。
-您可以在游戏的 **教程关卡** 中运行这段代码 [1]_ 来体验 uniref。
-
-.. attention::
-    请勿在多人模式下使用，影响其他玩家游戏体验
-
+下方给出了一段使用 uniref 框架完成的代码，其解决了 MRCTF2021 的一道逆向赛题。
 
 .. code-block:: python
     :linenos:
 
     from uniref import WinUniRef
 
-    # 指定待分析进程
-    ref = WinUniRef("Goose Goose Duck.exe")
+    ref = WinUniRef("GameHack.exe")
+    class_GetFlag = ref.find_class_in_image("Assembly-CSharp.dll", "Platformer.Flag.GetFlag")
+    class_GetFlag.find_field("goHome").value = True
+    class_GetFlag.find_field("findAlien").value = True
+    class_GetFlag.find_field("eatCookie").value = True
 
-    # 查找类
-    class_path = "Handlers.GameHandlers.PlayerHandlers.LocalPlayer"
-    local_player = ref.find_class_in_image("Assembly-CSharp.dll", class_path)
-
-    # 查找类中的成员变量，并打印其值
-    movement_speed = local_player.find_field("movementSpeed")
-    print(f"default speed: {movement_speed.value}")
-
-    # 修改成员变量的值
-    movement_speed.value = 20.0
+    method_EatTokenUpdateKey = class_GetFlag.find_method("EatTokenUpdateKey")
+    for i in range(105):
+        method_EatTokenUpdateKey()
 
 
 运行
 ------------
 
-对于 Windows 应用（exe），直接运行 Python 脚本即可，无需其他操作。
+对于 Windows 应用（exe），直接运行 Python 脚本即可。
+
+.. note::
+    如果目标进程是以管理员权限启动的，那么请保证本框架运行在管理员权限下。即必要时，需要使用管理员权限运行 Python。
+
 
 对于 Android 应用（apk），需要保证 frida 已可以在您的设备上工作。
 最常用的方法是在设备上运行 frida-server，其他方式详见 `frida官方文档 <https://frida.re/docs/modes/>`_ 。
@@ -83,8 +78,3 @@ uniref 需要 Python 3.7+（64 位）的运行环境，您可以通过 pip 完�
 
     GitHub <https://github.com/in1nit1t/uniref>
     PyPI <https://pypi.org/project/uniref/>
-
-
------
-
-.. [1] 如果目标进程是以管理员权限启动的，那么请保证本框架运行在管理员权限下。即必要时，需要使用管理员权限运行 Python。

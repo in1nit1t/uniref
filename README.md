@@ -10,7 +10,7 @@ uniref 是一个辅助分析 Unity 应用的框架。它可以帮助您获取 Un
 - 支持实时获取与修改类属性值
 - 支持实时获取与修改类方法实现、调用类方法
 - 在内存中完成修改，无需修改源文件
-- 可以绕过某些代码保护机制（压缩、加密壳等），避免繁琐的逆向分析过程
+- 可以绕过某些代码保护机制（压缩、加密壳等），减少繁琐的逆向分析过程
 - 支持分析 `Mono` 和 `IL2CPP` 两种脚本后端（Unity scripting backend）
 - 支持分析 **Windows x86 64 位**与**Android ARM**架构上运行的 32 / 64 位 Unity 应用
 
@@ -24,29 +24,23 @@ pip install -U uniref
 
 ## 示例
 
-下方给出了一段使用 uniref 框架完成的代码，其实现了修改 Windows 端鹅鸭杀游戏人物移速的效果。
-
-您可以在游戏的教程关卡中运行[^1]这段代码来体验 uniref，**请勿在多人模式下使用**，影响其他玩家游戏体验。
+下方给出了一段使用 uniref 框架完成的代码，其解决了 [MRCTF2021](https://uniref.readthedocs.io/en/latest/examples/windows.html#mrctf2021-ezgame) 的一道逆向赛题。
 
 ```Python
 from uniref import WinUniRef
 
-# 指定待分析进程
-ref = WinUniRef("Goose Goose Duck.exe")
+ref = WinUniRef("GameHack.exe")
+class_GetFlag = ref.find_class_in_image("Assembly-CSharp.dll", "Platformer.Flag.GetFlag")
+class_GetFlag.find_field("goHome").value = True
+class_GetFlag.find_field("findAlien").value = True
+class_GetFlag.find_field("eatCookie").value = True
 
-# 查找类
-class_path = "Handlers.GameHandlers.PlayerHandlers.LocalPlayer"
-local_player = ref.find_class_in_image("Assembly-CSharp.dll", class_path)
-
-# 查找类中的成员变量，并打印其值
-movement_speed = local_player.find_field("movementSpeed")
-print(f"default speed: {movement_speed.value}")
-
-# 修改成员变量的值
-movement_speed.value = 20.0
+method_EatTokenUpdateKey = class_GetFlag.find_method("EatTokenUpdateKey")
+for i in range(105):
+    method_EatTokenUpdateKey()
 ```
 
-对于 Android 端，则给出了分析神庙逃亡、Dream Blast 等应用的示例代码。请参阅 [文档](https://uniref.rtfd.io) 以了解更多信息 。
+[文档](https://uniref.readthedocs.io/en/latest/examples/index.html) 中还给出了分析 Goose Goose Duck、The Forest、Dream Blast、神庙逃亡等应用的示例代码。
 
 ## 参与进来
 
@@ -57,6 +51,3 @@ movement_speed.value = 20.0
 ## 开源协议
 
 [GNU Affero General Public License v3.0](https://github.com/in1nit1t/uniref/blob/main/LICENSE)
-
-
-[^1]: 如果目标进程是以管理员权限启动的，那么请保证本框架运行在管理员权限下。即必要时，需要使用管理员权限运行 Python。
