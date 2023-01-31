@@ -17,7 +17,7 @@ def modify_speed(ref: WinUniRef):
     movementSpeed_address = static_field + movementSpeed.offset
 
     # fight against anti-cheating mechanisms
-    ref.injector.mem_write_bool(movementSpeed_address + 0x10, False)
+    ref.injector.mem_write_bool(movementSpeed_address + 0x14, False)
     ref.injector.mem_write_float(movementSpeed_address, 20.0)
     ref.injector.mem_write_uint32(movementSpeed_address + 4, 0)
 
@@ -28,7 +28,7 @@ def show_my_position(ref: WinUniRef):
 
     LocalPlayer = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.LocalPlayer")
     try:
-        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x3C54E28, 0xB8, 0])
+        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x3CDB720, 0xB8, 0])
     except:
         print(error_hint)
         exit(-1)
