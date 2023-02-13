@@ -1,5 +1,7 @@
 # uniref
 
+[中文](https://github.com/in1nit1t/uniref/blob/main/README.md) | English
+
 `uniref` is a framework to assist in analyzing Unity applications. It can help you obtain reflection information of classes, methods, fields, etc. in Unity applications, allowing you to view and manipulate them in real time.
 
 You can use this framework to convert some of your analysis results into Python code, which is convenient for you to develop plug-ins for Unity applications.
