@@ -106,7 +106,7 @@ class WinInjector(Injector):
 
     def _get_kernel32_proc_address(self, proc_name: str):
         exe_path = str(Path(os.path.abspath(__file__)).parent.parent.parent / f"bin/win/getproc{self._bit_long}.exe")
-        p = Popen(f"{exe_path} {proc_name}", shell=True, stdout=PIPE)
+        p = Popen(f"\"{exe_path}\" {proc_name}", shell=True, stdout=PIPE)
         output = p.stdout.read()
         p.wait()
         if isinstance(output, bytes):
