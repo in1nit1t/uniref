@@ -47,7 +47,7 @@ def show_my_position(ref: WinUniRef):
 
     LocalPlayer = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.LocalPlayer")
     try:
-        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x4D19958, 0xB8, 0])
+        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x4C78210, 0xB8, 0])
     except:
         print(error_hint)
         exit(-1)
