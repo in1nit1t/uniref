@@ -42,7 +42,7 @@ for i in range(105):
     method_EatTokenUpdateKey()
 ```
 
-[文档](https://uniref.readthedocs.io/en/latest/examples/index.html) 中还给出了分析 Goose Goose Duck、The Forest、Dream Blast、神庙逃亡等应用的示例代码。
+[文档](https://uniref.readthedocs.io/en/latest/examples/index.html) 中还给出了分析 *森林之子*、*鹅鸭杀*、*Dream Blast*、*神庙逃亡*等应用的示例代码。
 
 ## 参与进来
 

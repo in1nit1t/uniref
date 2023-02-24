@@ -42,7 +42,7 @@ for i in range(105):
     method_EatTokenUpdateKey()
 ```
 
-[Documentation](https://uniref.readthedocs.io/en/latest/examples/index.html) also gives example code for analyzing Goose Goose Duck, The Forest, Dream Blast, Temple Run, etc.
+[Documentation](https://uniref.readthedocs.io/en/latest/examples/index.html) also gives example code for analyzing *Sons Of The Forest*, *Goose Goose Duck*, *Dream Blast*, *Temple Run*, etc.
 
 ## Get Involved
 
