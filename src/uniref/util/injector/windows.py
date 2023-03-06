@@ -46,9 +46,7 @@ class WinInjector(Injector):
     """ Process injector for ``Windows``. """
 
     def __init__(self, exe_filename: str = '', process_id: int = 0) -> None:
-        if process_id:
-            h_process = WinApi.OpenProcess(PROCESS_ALL_ACCESS, False, process_id)
-        else:
+        if not process_id:
             if exe_filename:
                 process_id = WinApi.GetPidByName(exe_filename)
                 if not process_id:
@@ -56,10 +54,9 @@ class WinInjector(Injector):
                 if len(process_id) != 1:
                     raise Exception(f"Too many processes with the same file name, use process id instead")
                 process_id = process_id[0]
-                h_process = WinApi.OpenProcess(PROCESS_ALL_ACCESS, False, process_id)
             else:
                 process_id = WinApi.GetCurrentProcessId()
-                h_process = WinApi.GetCurrentProcess()
+        h_process = WinApi.OpenProcess(PROCESS_ALL_ACCESS, False, process_id)
 
         self._h_process = h_process
         self._process_id = process_id
@@ -69,7 +66,7 @@ class WinInjector(Injector):
         self._get_proc_address = self._get_kernel32_proc_address("GetProcAddress")
 
     def __del__(self):
-        if self._h_process:
+        if self._h_process > 0:
             WinApi.CloseHandle(self._h_process)
         self._h_process = 0
 
