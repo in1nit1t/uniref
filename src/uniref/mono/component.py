@@ -327,7 +327,8 @@ class MonoMethod:
             raise NotImplementedError("System.Decimal")
         if self._instance == 0 and not self.is_static():
             raise ValueError("Not a static method, set class instance first")
-        func_args = (self.instance,)
+
+        func_args = tuple() if self.is_static() else (self.instance,)
         if args:
             if not isinstance(args, tuple):
                 raise TypeError("args should be tuple")
