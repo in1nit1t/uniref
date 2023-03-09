@@ -40,7 +40,7 @@ def unlimited_energy(ref: WinUniRef):
     setStamina = PlayerStats.find_method("setStamina")
     patch2 = setStamina.native_nop(0x2e, 8)
 
-    # if the game crashed, comment line 45, 46, and 52
+    # if the game crashed, comment line 44, 45, and 53
     Update = PlayerStats.find_method("Update")
     patch3 = Update.native_nop(0x382, 6)
 
