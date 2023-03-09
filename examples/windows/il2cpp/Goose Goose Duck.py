@@ -42,22 +42,11 @@ def modify_speed(ref: WinUniRef):
 
 
 def show_my_position(ref: WinUniRef):
-    error_hint = "Error multilevel pointer offsets due to game update"
-    game_assembly_base = ref.injector.get_module_base("GameAssembly.dll")
-
     LocalPlayer = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.LocalPlayer")
-    try:
-        local_player_instance = ref.injector.mem_read_multilevel_pointer(game_assembly_base, [0x4C78210, 0xB8, 0])
-    except:
-        print(error_hint)
-        exit(-1)
-    assert local_player_instance > 0, error_hint
-    LocalPlayer.instance = local_player_instance
+    LocalPlayer.instance = LocalPlayer.find_field("Instance").value
 
     PlayerController = ref.find_class_in_image("Assembly-CSharp.dll", "Handlers.GameHandlers.PlayerHandlers.PlayerController")
-    player_controller_instance = LocalPlayer.find_field("Player").value
-    assert player_controller_instance > 0, error_hint
-    PlayerController.instance = player_controller_instance
+    PlayerController.instance = LocalPlayer.find_field("Player").value
 
     position = PlayerController.find_field_by_offset(0x2D8)
     assert position.type_name == "UnityEngine.Vector3", "Error field offset due to game update"
