@@ -34,6 +34,7 @@ def speed_hack(toggle: bool):
 
     fpc.find_field("_baseFallDamage").value = 0.0 if toggle else 20.0
     fpc.find_field("_fallDamagePower").value = 0.0 if toggle else 2.0
+    fpc.find_field("_fallDamageVelocity").value = 1000.0 if toggle else 16.0
 
     print("You now run, crouch, and swim five times faster and are immune to fall damage.")
 
