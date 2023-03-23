@@ -21,6 +21,16 @@ def energy_hack(toggle: bool):
     print("Now you should have unlimited energy")
 
 
+def ammo_hack():
+    sons = ref.find_image_by_name("Sons.dll")
+    for cls in sons.list_classes():
+        if cls.name == "Ammo":
+            remove = cls.find_method("Remove")
+            remove.native_nop(0xf1, 3)
+            print("Now you should have unlimited ammo")
+            break
+
+
 def speed_hack(toggle: bool):
     fpc_instance = local_player.find_field("<FpCharacter>k__BackingField").value
     fpc = ref.find_class_in_image("Sons.dll", "FirstPersonCharacter")
@@ -86,4 +96,5 @@ def stat_hack():
 energy_hack(True)
 speed_hack(True)
 strength_level_hack()
+ammo_hack()
 stat_hack()
