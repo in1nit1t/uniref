@@ -7,14 +7,13 @@ from uniref.define.patch import NativePatch
 
 class MonoNativeFunc:
 
-    def __init__(self, func_name: str, il2cpp: bool, arg_cnt: int = 0, ret_type: int = TYPE_VOID) -> None:
+    def __init__(self, func_name: str, il2cpp: bool) -> None:
         self._func_name = func_name
         self._il2cpp = il2cpp
-        self._arg_cnt = arg_cnt
-        self._ret_type = ret_type
 
         self._func_address = 0
         self._mono_injector = None
+        self._user_data = None
 
     def __call__(self, *args, **kwargs) -> int:
         if self._mono_injector is None:
@@ -31,7 +30,8 @@ class MonoNativeFunc:
         args = args[:arg_cnt]
         if not all([isinstance(arg, int) for arg in args]):
             raise _MonoNativeError(f"Native function arguments should all be int in Python")
-        return self._mono_injector.call_native_function(self._func_address, args, ret_type, CALL_TYPE_CDECL)
+
+        return self._mono_injector.call_native_function(self._func_address, args, ret_type, CALL_TYPE_CDECL, self._user_data)
 
     @property
     def name(self) -> str:
@@ -52,6 +52,9 @@ class MonoNativeFunc:
     def set_mono_injector(self, injector: object) -> None:
         self._mono_injector = injector
 
+    def set_user_data(self, user_data: list) -> None:
+        self._user_data = user_data
+
 
 class MonoNativeFuncSet:
 
@@ -60,11 +63,11 @@ class MonoNativeFuncSet:
         self._ptr = dict()
 
         if self._il2cpp:
-            for name, prop in il2cpp_native_func_property.items():
-                self._ptr[name] = MonoNativeFunc(name, *prop)
+            for name in il2cpp_native_func_property:
+                self._ptr[name] = MonoNativeFunc(name, self._il2cpp)
         else:
-            for name, prop in mono_native_func_property.items():
-                self._ptr[name] = MonoNativeFunc(name, *prop)
+            for name in mono_native_func_property:
+                self._ptr[name] = MonoNativeFunc(name, self._il2cpp)
 
     def __setitem__(self, key: str, value: int) -> None:
         if not isinstance(key, str):
@@ -78,6 +81,10 @@ class MonoNativeFuncSet:
 
     def __getitem__(self, item: str) -> Optional[MonoNativeFunc]:
         return self._ptr.get(item, None)
+
+    def set_user_data(self, user_data: list) -> None:
+        for key in self._ptr:
+            self._ptr[key].set_user_data(user_data)
 
 
 class MonoField:

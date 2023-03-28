@@ -325,7 +325,8 @@ class WinInjector(Injector):
         self.mem_free(page_start)
         return proc_address
 
-    def call_native_function(self, func_address: int, args: Tuple[int], ret_type: int, call_type: int) -> Any:
+    def call_native_function(self, func_address: int, args: Tuple[int], ret_type: int,
+                             call_type: int, user_data: Optional[Any] = None) -> Any:
         if not isinstance(func_address, int):
             raise TypeError("func_address should be int")
         if not isinstance(args, tuple):
@@ -346,6 +347,16 @@ class WinInjector(Injector):
 
         if self._bit_long == 32:
             code = "push ebp\n mov ebp, esp\n"
+
+            if isinstance(user_data, list):
+                domain, attach, detach = user_data
+                thread_address = page_start + 0x400
+
+                code += f"push {hex(domain)}              \n" \
+                        f"mov eax, {hex(attach)}          \n" \
+                        f"call eax                        \n" \
+                        f"mov ecx, {hex(thread_address)}  \n" \
+                        f"mov dword ptr [ecx], eax        \n" \
 
             if call_type == CALL_TYPE_THISCALL:
                 if len(args) < 1:
@@ -368,10 +379,27 @@ class WinInjector(Injector):
                     f"call eax                         \n" \
                     f"mov ecx, {hex(return_address)}   \n" \
                     f"mov dword ptr [ecx], eax         \n" \
-                    f"leave\n ret"
+
+            if isinstance(user_data, list):
+                code += f"mov ecx, {hex(thread_address)}  \n" \
+                        f"push dword ptr [ecx]            \n" \
+                        f"mov eax, {hex(detach)}          \n" \
+                        f"call eax                        \n" \
+
+            code += f"leave\n ret"
         else:
             frame_size = 0x28 + ((len(args[4:]) + 1) // 2) * 0x10
             code = f"sub rsp, {hex(frame_size)}        \n"
+
+            if isinstance(user_data, list):
+                domain, attach, detach = user_data
+                thread_address = page_start + 0x400
+
+                code += f"mov rcx, {hex(domain)}          \n" \
+                        f"mov rax, {hex(attach)}          \n" \
+                        f"call rax                        \n" \
+                        f"mov r12, {hex(thread_address)}  \n" \
+                        f"mov qword ptr [r12], rax        \n" \
 
             regs = ["rcx", "rdx", "r8", "r9"]
             for idx, arg in enumerate(args[:4]):
@@ -385,7 +413,14 @@ class WinInjector(Injector):
                     f"call rax                         \n" \
                     f"mov r12, {hex(return_address)}   \n" \
                     f"mov qword ptr [r12], rax         \n" \
-                    f"add rsp, {hex(frame_size)}       \n" \
+
+            if isinstance(user_data, list):
+                code += f"mov r12, {hex(thread_address)}  \n" \
+                        f"mov rcx, qword ptr [r12]        \n" \
+                        f"mov rax, {hex(detach)}          \n" \
+                        f"call rax                        \n" \
+
+            code += f"add rsp, {hex(frame_size)}       \n" \
                     f"ret"
 
         code = self.code_compile(code)

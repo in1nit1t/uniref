@@ -26,10 +26,6 @@ class MonoInjector(Injector, metaclass=ABCMeta):
     def root_domain(self) -> int:
         raise NotImplementedError
 
-    @property
-    def attach_thread(self) -> int:
-        raise NotImplementedError
-
     @abstractmethod
     def _mono_detect(self) -> None:
         ...
@@ -282,25 +278,17 @@ class MonoInjector(Injector, metaclass=ABCMeta):
     def il2cpp_field_static_set_value(self, field: int, _input: int) -> int:
         ...
 
-    def _mono_attach(self) -> None:
+    def _mono_init(self) -> None:
         self._func_set = self._build_mono_func_set()
 
         if self.use_il2cpp:
             self._root_domain = self.mono_domain_get()
         else:
             self._root_domain = self.mono_get_root_domain()
-        self._mono_thread = self.mono_thread_attach(self._root_domain)
 
-    def _mono_detach(self) -> None:
-        if self._mono_thread != 0:
-            try:
-                if self.use_il2cpp:
-                    ...
-                else:
-                    self.mono_thread_detach(self._mono_thread)
-            except:
-                ...
-            self._mono_thread = 0
+        attach = self._func_set["mono_thread_attach"].address
+        detach = self._func_set["mono_thread_detach"].address
+        self._func_set.set_user_data([self._root_domain, attach, detach])
 
     def _mono_enum_assembly_impl(self, enum_assembly_callback) -> List[MonoAssembly]:
         callback_address = self.mem_alloc(alloc_size=len(enum_assembly_callback))
@@ -402,6 +390,9 @@ class MonoInjector(Injector, metaclass=ABCMeta):
         if native_func:
             return native_func.callable()
         return False
+
+    def get_native_func(self, func_name: str) -> Optional[MonoNativeFunc]:
+        return self._func_set[func_name]
 
     def get_assembly_image(self, assembly: int) -> MonoImage:
         return MonoImage(self, assembly, self.mono_assembly_get_image(assembly))

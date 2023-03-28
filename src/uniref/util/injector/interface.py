@@ -266,7 +266,8 @@ class Injector(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def call_native_function(self, func_address: int, args: Tuple[int], ret_type: int, call_type: int) -> Any:
+    def call_native_function(self, func_address: int, args: Tuple[int], ret_type: int,
+                             call_type: int, user_data: Optional[Any] = None) -> Any:
         ...
 
     @abstractmethod

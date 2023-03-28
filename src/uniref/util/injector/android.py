@@ -265,7 +265,8 @@ class AndroidInjector(Injector):
             return int(address, 16)
         return 0
 
-    def call_native_function(self, func_address: int, args: Tuple[int], ret_type: int, call_type: int) -> Any:
+    def call_native_function(self, func_address: int, args: Tuple[int], ret_type: int,
+                             call_type: int, user_data: Optional[Any] = None) -> Any:
         if not isinstance(func_address, int):
             raise TypeError("func_address should be int")
         if not isinstance(args, tuple):

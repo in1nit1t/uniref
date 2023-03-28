@@ -1,8 +1,5 @@
-from capstone.x86_const import *
-
 from uniref.mono.component import *
 from uniref.util.winapi import WinApi
-from uniref.util.disasm import X86Disasm
 from uniref.util.scanner import CMemoryScanner
 from uniref.util.injector.windows import WinInjector
 from uniref.mono.injector.interface import MonoInjector
@@ -12,23 +9,14 @@ class WinMonoInjector(WinInjector, MonoInjector):
     """ Unity application injector for ``Windows``. """
 
     def __init__(self, *args, **kwargs):
-        self._mono_thread = 0
         super().__init__(*args, **kwargs)
         self._h_mono = 0
         self._func_set = None
         self._root_domain = 0
         self._use_il2cpp = False
-        self._domain_tls_idx = -1
-        self._gs_access_address = -1
-        self._tls_set_value = self._get_kernel32_proc_address("TlsSetValue")
 
         self._mono_detect()
-        self._mono_attach()
-        if not self._use_il2cpp:
-            self._try_get_gs_check_address()
-
-    def __del__(self):
-        self._mono_detach()
+        self._mono_init()
 
     @property
     def h_mono(self) -> int:
@@ -41,10 +29,6 @@ class WinMonoInjector(WinInjector, MonoInjector):
     @property
     def root_domain(self) -> int:
         return self._root_domain
-
-    @property
-    def attach_thread(self) -> int:
-        return self._mono_thread
 
     def _mono_detect(self) -> None:
         h_mono = self.get_module_base("mono.dll")
@@ -104,109 +88,6 @@ class WinMonoInjector(WinInjector, MonoInjector):
                 func_set[fn].set_mono_injector(self)
         self.mem_free(page_start)
         return func_set
-
-    def _ensure_domain_tls_idx(self) -> bool:
-        if self._domain_tls_idx != -1:
-            return True
-
-        address = self._func_set["mono_domain_get"].address
-        code = self._mem_read(address, 15)  # read first instruction
-        ins_list = X86Disasm(self._bit_long).disassemble(code, address, 1)
-        if ins_list:
-            ins = ins_list[0]
-            operands = ins.operands
-            if ins.mnemonic == "push" and operands[0].type == X86_OP_MEM:
-                self._domain_tls_idx = self.mem_read_uint32(operands[0].mem.disp)
-                return True
-            if ins.mnemonic == "mov" and \
-                    len(operands) == 2 and \
-                    ins.reg_name(operands[0].reg) in ("ecx", "rcx") and \
-                    operands[1].type == X86_OP_MEM:
-                target_address = address + ins.size + operands[1].mem.disp
-                self._domain_tls_idx = self.mem_read_uint32(target_address)
-                return True
-        return False
-
-    def _try_get_gs_check_address(self) -> None:
-        if self._gs_access_address != -1:
-            return
-
-        mscorlib = self.find_image_by_name("mscorlib")
-        if mscorlib:
-            wait_handle = self.find_class_in_image(mscorlib.handle, "System.Threading", "WaitHandle")
-            if not wait_handle:
-                return
-            wait_all_internal = self.find_method_in_class(wait_handle.handle, "WaitAll_internal")
-            if not wait_all_internal:
-                return
-            code_size = self.get_method_size(wait_all_internal.handle)
-            if code_size == -1:
-                return
-            code_start = wait_all_internal.address
-            code = self._mem_read(code_start, code_size)
-            instructions = X86Disasm(self._bit_long).disassemble(code, code_start)
-            for ins in instructions:
-                operands = ins.operands
-                if ins.mnemonic == "mov" and len(operands) == 2 and \
-                        operands[1].type == X86_OP_MEM and \
-                        operands[1].mem.segment == X86_REG_GS:
-                    self._gs_access_address = operands[1].mem.disp
-
-    def mono_compile_method(self, method: int) -> int:
-        if not self._ensure_domain_tls_idx():
-            raise NotImplementedError("Can't compile method in current environment")
-
-        bit_long = self._bit_long
-        page_start = self.mem_alloc()
-        return_address = page_start + 0x300
-        mono_compile_method = self._func_set["mono_compile_method"].address
-
-        code = "push ebp\n mov ebp, esp\n" if bit_long == 32 else "sub rsp, 28h\n"
-
-        if self._gs_access_address != -1:
-            gs_access_mem = self.mem_alloc(protection="rw-")
-            if bit_long == 32:
-                code += f"mov ecx, {hex(gs_access_mem)}            \n" \
-                        f"mov eax, {hex(self._gs_access_address)}  \n" \
-                        f"mov gs:[eax], ecx                        \n"
-            else:
-                code += f"mov r12, {hex(gs_access_mem)}            \n" \
-                        f"mov r13, {hex(self._gs_access_address)}  \n" \
-                        f"mov gs:[r13], r12                        \n"
-
-        if bit_long == 32:
-            code += f"push {hex(self._root_domain)}         \n" \
-                    f"push {hex(self._domain_tls_idx)}      \n" \
-                    f"mov eax, {hex(self._tls_set_value)}   \n" \
-                    f"call eax                              \n" \
-                    f"push {hex(method)}                    \n" \
-                    f"mov eax, {hex(mono_compile_method)}   \n" \
-                    f"call eax                              \n" \
-                    f"mov ecx, {hex(return_address)}        \n" \
-                    f"mov dword ptr [ecx], eax              \n" \
-                    f"leave\n ret"
-        else:
-            code += f"mov rcx, {hex(self._domain_tls_idx)}  \n" \
-                    f"mov rdx, {hex(self._root_domain)}     \n" \
-                    f"mov rax, {hex(self._tls_set_value)}   \n" \
-                    f"call rax                              \n" \
-                    f"mov rcx, {hex(method)}                \n" \
-                    f"mov rax, {hex(mono_compile_method)}   \n" \
-                    f"call rax                              \n" \
-                    f"mov r12, {hex(return_address)}        \n" \
-                    f"mov qword ptr [r12], rax              \n" \
-                    f"add rsp, 28h                          \n" \
-                    f"ret"
-
-        code = self.code_compile(code)
-        self.mem_write_bytes(page_start, code)
-        self._create_remote_thread(page_start)
-        method_address = self.mem_read_int64(return_address)
-
-        if self._gs_access_address != -1:
-            self.mem_free(gs_access_mem)
-        self.mem_free(page_start)
-        return method_address
 
     def enum_assemblies(self) -> List[MonoAssembly]:
         if self._use_il2cpp:

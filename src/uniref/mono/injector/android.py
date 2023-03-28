@@ -10,15 +10,15 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
     """ Unity application injector for ``Android``. """
 
     def __init__(self, *args, **kwargs):
-        self._mono_thread = 0
         super().__init__(*args, **kwargs)
+        self._mono_thread = 0
         self._root_domain = 0
         self._func_set = None
         self._use_il2cpp = False
         self._mono_module = None
 
         self._mono_detect()
-        self._mono_attach()
+        self._mono_init()
 
     def __del__(self):
         self._mono_detach()
@@ -37,10 +37,6 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
     def root_domain(self) -> int:
         return self._root_domain
 
-    @property
-    def attach_thread(self) -> int:
-        return self._mono_thread
-
     def _mono_detach(self) -> None:
         if self._mono_thread != 0:
             self._mono_thread = 0
@@ -58,6 +54,10 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
                 break
         if not self._mono_module:
             raise SystemError("Only support mono & il2cpp application")
+
+    def _mono_init(self) -> None:
+        super()._mono_init()
+        self._mono_thread = self.mono_thread_attach(self._root_domain)
 
     def _build_mono_func_set(self) -> MonoNativeFuncSet:
         module_name = self._mono_module["name"]
