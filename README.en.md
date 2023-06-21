@@ -18,7 +18,7 @@ You can use this framework to convert some of your analysis results into Python 
 
 ## Installation
 
-uniref requires Windows Python 3.7+ or higher (64-bit) operating environment, you can complete the installation through pip:
+uniref requires Python 3.7+ or higher (64-bit) operating environment, you can complete the installation through pip:
 
 ```bash
 pip install -U uniref
