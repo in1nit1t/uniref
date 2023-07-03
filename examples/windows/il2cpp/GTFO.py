@@ -34,15 +34,20 @@ def run_speed_hack(toggle: bool = True):
 
 
 def ammo_hack(toggle: bool = True):
-    code = b'\x90' * 6 if toggle else bytes.fromhex("FF 8B 90 02 00 00")
+    code1 = b'\x90' * 6 if toggle else bytes.fromhex("FF 8B 90 02 00 00")
+    code2 = b'\x90' * 5 if toggle else bytes.fromhex("F3 0F 11 73 18")
 
     bullet_weapon = ref.find_class_in_image("Modules-ASM.dll", "Gear.BulletWeapon")
     bullet_weapon_fire = bullet_weapon.find_method("Fire")
-    bullet_weapon_fire.native_patch(0xed2, code)
+    bullet_weapon_fire.native_patch(0xed2, code1)
 
     shotgun = ref.find_class_in_image("Modules-ASM.dll", "Gear.Shotgun")
     shotgun_fire = shotgun.find_method("Fire")
-    shotgun_fire.native_patch(0xec9, code)
+    shotgun_fire.native_patch(0xec9, code1)
+
+    ammo_storage = ref.find_class_in_image("Modules-ASM.dll", "Player.PlayerAmmoStorage")
+    update_bullets = ammo_storage.find_method("UpdateBulletsInPack")
+    update_bullets.native_patch(0xc9, code2)
 
 
 health_hack()
