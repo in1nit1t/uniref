@@ -31,7 +31,7 @@ class WinMonoInjector(WinInjector, MonoInjector):
         return self._root_domain
 
     def _mono_detect(self) -> None:
-        h_mono = self.get_module_base("mono.dll")
+        h_mono = self.get_module_base("mono-2.0-bdwgc.dll")
         if h_mono:
             self._h_mono = h_mono
         else:
