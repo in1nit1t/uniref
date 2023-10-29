@@ -43,7 +43,7 @@ def ammo_hack(toggle: bool = True):
 
     shotgun = ref.find_class_in_image("Modules-ASM.dll", "Gear.Shotgun")
     shotgun_fire = shotgun.find_method("Fire")
-    shotgun_fire.native_patch(0xec9, code1)
+    shotgun_fire.native_patch(0xe85, code1)
 
     ammo_storage = ref.find_class_in_image("Modules-ASM.dll", "Player.PlayerAmmoStorage")
     update_bullets = ammo_storage.find_method("UpdateBulletsInPack")
