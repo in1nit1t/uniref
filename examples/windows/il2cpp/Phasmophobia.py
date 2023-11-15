@@ -10,8 +10,8 @@ from uniref import WinUniRef
 
 
 # For Chinese
-# ghost_type_str = ["魂魄", "魅影", "幻影", "骚灵", "女妖", "巨灵", "梦魇", "亡魂", "暗影", "恶魔", "幽灵", "赤鬼", "妖怪", "寒魔", "御灵", "鬼婴", "怨灵", "孪魂", "雷魂", "幻妖", "拟魂", "魔洛伊", "雾影", "刹耶"]
-ghost_type_str = ["Spirit", "Wraith", "Phantom", "Poltergeist", "Banshee", "Jinn", "Mare", "Revenant", "Shade", "Demon", "Yurei", "Oni", "Yokai", "Hantu", "Goryo", "Myling", "Onryo", "TheTwins", "Raiju", "Obake", "Mimic", "Moroi", "Deogen", "Thaye"]
+ghost_type_str = ["魂魄", "魅影", "幻影", "骚灵", "女妖", "巨灵", "梦魇", "亡魂", "暗影", "恶魔", "幽灵", "赤鬼", "妖怪", "寒魔", "御灵", "鬼婴", "怨灵", "孪魂", "雷魂", "幻妖", "拟魂", "魔洛伊", "雾影", "刹耶"]
+# ghost_type_str = ["Spirit", "Wraith", "Phantom", "Poltergeist", "Banshee", "Jinn", "Mare", "Revenant", "Shade", "Demon", "Yurei", "Oni", "Yokai", "Hantu", "Goryo", "Myling", "Onryo", "TheTwins", "Raiju", "Obake", "Mimic", "Moroi", "Deogen", "Thaye"]
 
 
 def get_room_str(level_room):
@@ -38,14 +38,14 @@ for field in ai.list_fields():
     if field.type_name == "GhostInfo":
         info.instance = field.value
 
-ghost_type = info.find_field_by_offset(0x20)
+ghost_type = info.find_field_by_offset(0x28)
 ghost_type = ghost_type_str[ghost_type.value & 0xFF]
 
 ls.instance = ls.find_field("_instance").value
 bone_room = ls.find_field("boneRoom").value
 
-my_room = lc.find_field_by_offset(0x28)
-ghost_room = lc.find_field_by_offset(0x30)
+my_room = lc.find_field_by_offset(0x30)
+ghost_room = lc.find_field_by_offset(0x38)
 
 
 try:
