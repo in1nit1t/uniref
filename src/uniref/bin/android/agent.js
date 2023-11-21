@@ -175,5 +175,35 @@ rpc.exports = {
   callNfV: function (address, returnType, arg1, arg2, arg3, arg4, arg5) {
     var func = new NativeFunction(ptr(address), returnType, ['pointer', 'pointer', 'pointer', 'pointer', 'pointer']);
     return func(ptr(arg1), ptr(arg2), ptr(arg3), ptr(arg4), ptr(arg5));
+  },
+  callNativeFunc: function (address, returnType, domain, attach, detach, ...args) {
+    var result;
+    var mono_thread = 0;
+    var argc = args.length;
+
+    if (domain != 0 && attach != 0) {
+      var attach_func = new NativeFunction(ptr(attach), 'pointer', ['pointer']);
+      mono_thread = attach_func(ptr(domain));
+    }
+
+    if (argc == 0) {
+      result = this.callVoidNf(address, returnType);
+    } else if (argc == 1) {
+      result = this.callNfI(address, returnType, args[0]);
+    } else if (argc == 2) {
+      result = this.callNfII(address, returnType, args[0], args[1]);
+    } else if (argc == 3) {
+      result = this.callNfIII(address, returnType, args[0], args[1], args[2]);
+    } else if (argc == 4) {
+      result = this.callNfIV(address, returnType, args[0], args[1], args[2], args[3]);
+    } else if (argc == 5) {
+      result = this.callNfV(address, returnType, args[0], args[1], args[2], args[3], args[4]);
+    }
+
+    if (mono_thread != 0 && detach != 0) {
+      var detach_func = new NativeFunction(ptr(detach), 'pointer', ['pointer']);
+      detach_func(ptr(mono_thread));
+    }
+    return result;
   }
 };

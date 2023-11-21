@@ -1,4 +1,5 @@
 import os
+import time
 import frida
 import struct
 from typing import *
@@ -39,19 +40,14 @@ def _register_mem_write(clazz: type):
 
 class AndroidInjector(Injector):
 
-    def __init__(
-        self,
-        process_name: Optional[str] = None,
-        package_name: Optional[str] = None,
-        device_id: Optional[str] = None
-    ) -> None:
+    def __init__(self,  process_name: Optional[str], package_name: Optional[str], device_id: Optional[str], spawn: bool) -> None:
         self._agent = None
         self._session = None
         self._bit_long = 0
         self._process_id = 0
 
         self._device = self._find_device(device_id)
-        self._session = self._attach_application(process_name, package_name)
+        self._session = self._attach_application(process_name, package_name, spawn)
 
         script_path = Path(os.path.abspath(__file__)).parent.parent.parent / "bin/android/agent.js"
         self._agent = self._session.create_script(script_path.read_text("utf-8", "ignore"))
@@ -83,7 +79,7 @@ class AndroidInjector(Injector):
             device = frida.get_usb_device()
         return device
 
-    def _attach_application(self, process_name: Optional[str], package_name: Optional[str]) -> Optional[frida.core.Session]:
+    def _attach_application(self, process_name: Optional[str], package_name: Optional[str], spawn: bool) -> Optional[frida.core.Session]:
         if not process_name and not package_name:
             app = self._device.get_frontmost_application()
             if app:
@@ -93,6 +89,12 @@ class AndroidInjector(Injector):
 
         if process_name:
             return self._device.attach(process_name)
+
+        if package_name and spawn:
+            pid = self._device.spawn([package_name])
+            self._device.resume(pid)
+            time.sleep(1)
+            return self._device.attach(pid)
 
         apps = self._device.enumerate_applications(scope="full")
         for app in apps:
@@ -280,19 +282,13 @@ class AndroidInjector(Injector):
 
         real_ret_type = frida_type_map.get(ret_type, "void")
 
-        argc = len(args)
-        if argc == 0:
-            ret_val = self._api.call_void_nf(func_address, real_ret_type)
-        elif argc == 1:
-            ret_val = self._api.call_nf_i(func_address, real_ret_type, *args)
-        elif argc == 2:
-            ret_val = self._api.call_nf_i_i(func_address, real_ret_type, *args)
-        elif argc == 3:
-            ret_val = self._api.call_nf_i_i_i(func_address, real_ret_type, *args)
-        elif argc == 4:
-            ret_val = self._api.call_nf_i_v(func_address, real_ret_type, *args)
-        elif argc == 5:
-            ret_val = self._api.call_nf_v(func_address, real_ret_type, *args)
+        if len(args) <= 5:
+            if user_data is None:
+                user_data = [0, 0, 0]
+            if len(args) == 0:
+                ret_val = self._api.call_native_func(func_address, real_ret_type, *user_data)
+            else:
+                ret_val = self._api.call_native_func(func_address, real_ret_type, *user_data, *args)
         else:
             raise NotImplementedError("Too many parameters (more than 5)")
 

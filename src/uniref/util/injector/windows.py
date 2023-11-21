@@ -348,7 +348,7 @@ class WinInjector(Injector):
         if self._bit_long == 32:
             code = "push ebp\n mov ebp, esp\n"
 
-            if isinstance(user_data, list):
+            if isinstance(user_data, list) and all([i != 0 for i in user_data]):
                 domain, attach, detach = user_data
                 thread_address = page_start + 0x400
 
@@ -380,7 +380,7 @@ class WinInjector(Injector):
                     f"mov ecx, {hex(return_address)}   \n" \
                     f"mov dword ptr [ecx], eax         \n" \
 
-            if isinstance(user_data, list):
+            if isinstance(user_data, list) and all([i != 0 for i in user_data]):
                 code += f"mov ecx, {hex(thread_address)}  \n" \
                         f"push dword ptr [ecx]            \n" \
                         f"mov eax, {hex(detach)}          \n" \
@@ -391,7 +391,7 @@ class WinInjector(Injector):
             frame_size = 0x28 + ((len(args[4:]) + 1) // 2) * 0x10
             code = f"sub rsp, {hex(frame_size)}        \n"
 
-            if isinstance(user_data, list):
+            if isinstance(user_data, list) and all([i != 0 for i in user_data]):
                 domain, attach, detach = user_data
                 thread_address = page_start + 0x400
 
@@ -414,7 +414,7 @@ class WinInjector(Injector):
                     f"mov r12, {hex(return_address)}   \n" \
                     f"mov qword ptr [r12], rax         \n" \
 
-            if isinstance(user_data, list):
+            if isinstance(user_data, list) and all([i != 0 for i in user_data]):
                 code += f"mov r12, {hex(thread_address)}  \n" \
                         f"mov rcx, qword ptr [r12]        \n" \
                         f"mov rax, {hex(detach)}          \n" \

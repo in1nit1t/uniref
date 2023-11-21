@@ -342,7 +342,7 @@ class MonoMethod:
             if not all([isinstance(arg, int) for arg in args]):
                 raise NotImplementedError(f"Function arguments should all be int in Python")
             func_args += args
-        return self._mono_injector.call_native_function(self.address, func_args, ret_type, call_type)
+        return self._mono_injector.call_native_function(self.address, func_args, ret_type, call_type, self._mono_injector.get_metadata())
 
     @property
     def handle(self) -> int:

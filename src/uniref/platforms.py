@@ -187,6 +187,7 @@ class AndroidUniRef(_UniRef):
     :param process_name: the process name of the target application, you can get it by ``frida-ps``
     :param package_name: the package name of the target application
     :param device_id: specify the device id, you can get it by ``adb devices``
+    :param spawn: decide whether to create or attach a process when ``package_name`` is given, ``True`` by default
 
     Examples:
 
@@ -198,8 +199,11 @@ class AndroidUniRef(_UniRef):
         # attach the application by its process name (automatically select device)
         ref = AndroidUniRef(process_name="My App")
 
-        # attach the application by its package name (automatically select device)
+        # spawn the application by its package name (automatically select device)
         ref = AndroidUniRef(package_name="com.test.my_app")
+
+        # attach the application by its package name (automatically select device)
+        ref = AndroidUniRef(package_name="com.test.my_app", spawn=False)
 
         # attach the application on the specified device
         ref = AndroidUniRef(device_id="12a34b5")
@@ -211,6 +215,7 @@ class AndroidUniRef(_UniRef):
         self,
         process_name: Optional[str] = None,
         package_name: Optional[str] = None,
-        device_id: Optional[str] = None
+        device_id: Optional[str] = None,
+        spawn: bool = True
     ) -> None:
-        self._mono_injector = AndroidMonoInjector(process_name, package_name, device_id)
+        self._mono_injector = AndroidMonoInjector(process_name, package_name, device_id, spawn)

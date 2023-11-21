@@ -35,7 +35,6 @@ class MonoInjectorTest(TestCase):
     def test_1_attach(self) -> None:
         self.assertNotEqual(0, self.injector.h_mono)
         self.assertNotEqual(0, self.injector.root_domain)
-        self.assertNotEqual(0, self.injector.attach_thread)
         self.assertFalse(self.injector.use_il2cpp)
 
     def test_2_enum(self) -> None:
@@ -159,7 +158,6 @@ class Il2cppInjectorTest(TestCase):
     def test_1_attach(self) -> None:
         self.assertNotEqual(0, self.injector.h_mono)
         self.assertNotEqual(0, self.injector.root_domain)
-        self.assertNotEqual(0, self.injector.attach_thread)
         self.assertTrue(self.injector.use_il2cpp)
 
     def test_2_enum(self) -> None:

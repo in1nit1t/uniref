@@ -11,7 +11,6 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._mono_thread = 0
         self._root_domain = 0
         self._func_set = None
         self._use_il2cpp = False
@@ -19,9 +18,6 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
 
         self._mono_detect()
         self._mono_init()
-
-    def __del__(self):
-        self._mono_detach()
 
     @property
     def h_mono(self) -> int:
@@ -37,10 +33,6 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
     def root_domain(self) -> int:
         return self._root_domain
 
-    def _mono_detach(self) -> None:
-        if self._mono_thread != 0:
-            self._mono_thread = 0
-
     def _mono_detect(self) -> None:
         modules = self._enumerate_modules()
         for i in range(len(modules) - 1, -1, -1):
@@ -54,10 +46,6 @@ class AndroidMonoInjector(AndroidInjector, MonoInjector):
                 break
         if not self._mono_module:
             raise SystemError("Only support mono & il2cpp application")
-
-    def _mono_init(self) -> None:
-        super()._mono_init()
-        self._mono_thread = self.mono_thread_attach(self._root_domain)
 
     def _build_mono_func_set(self) -> MonoNativeFuncSet:
         module_name = self._mono_module["name"]

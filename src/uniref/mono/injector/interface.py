@@ -278,6 +278,11 @@ class MonoInjector(Injector, metaclass=ABCMeta):
     def il2cpp_field_static_set_value(self, field: int, _input: int) -> int:
         ...
 
+    def get_metadata(self) -> List[int]:
+        attach = self._func_set["mono_thread_attach"].address
+        detach = self._func_set["mono_thread_detach"].address
+        return [self._root_domain, attach, detach]
+
     def _mono_init(self) -> None:
         self._func_set = self._build_mono_func_set()
 
@@ -286,9 +291,7 @@ class MonoInjector(Injector, metaclass=ABCMeta):
         else:
             self._root_domain = self.mono_get_root_domain()
 
-        attach = self._func_set["mono_thread_attach"].address
-        detach = self._func_set["mono_thread_detach"].address
-        self._func_set.set_user_data([self._root_domain, attach, detach])
+        self._func_set.set_user_data(self.get_metadata())
 
     def _mono_enum_assembly_impl(self, enum_assembly_callback) -> List[MonoAssembly]:
         callback_address = self.mem_alloc(alloc_size=len(enum_assembly_callback))
