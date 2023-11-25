@@ -22,7 +22,7 @@ mono_native_func_name = [
     "mono_object_unbox", "mono_object_new", "mono_class_get_type", "mono_class_get_nesting_type", "mono_image_open",
     "mono_method_desc_search_in_image", "mono_runtime_invoke", "mono_runtime_object_init", "mono_assembly_name_new",
     "mono_assembly_loaded", "mono_assembly_open", "mono_field_static_get_value", "mono_field_static_set_value",
-    "mono_class_get_field_from_name", "mono_method_get_flags", "mono_type_get_class"
+    "mono_class_get_field_from_name", "mono_method_get_flags", "mono_type_get_class", "mono_class_get_flags"
 ]
 
 il2cpp_native_func_name = [
@@ -53,7 +53,7 @@ il2cpp_native_func_name = [
     "il2cpp_image_get_class", "il2cpp_type_get_assembly_qualified_name", "il2cpp_string_chars",
     "il2cpp_method_get_param_count", "il2cpp_method_get_param_name", "il2cpp_method_get_param",
     "il2cpp_method_get_return_type", "il2cpp_class_from_type", "il2cpp_class_get_field_from_name",
-    "il2cpp_method_get_flags", "il2cpp_type_get_class"
+    "il2cpp_method_get_flags", "il2cpp_type_get_class", "il2cpp_class_get_flags"
 ]
 
 il2cpp_mono_native_func_map = {
@@ -81,6 +81,7 @@ il2cpp_mono_native_func_map = {
     "il2cpp_class_from_name_case": "mono_class_from_name_case",
     "il2cpp_class_from_name": "mono_class_from_name",
     "il2cpp_class_get_name": "mono_class_get_name",
+    "il2cpp_class_get_flags": "mono_class_get_flags",
     "il2cpp_class_get_namespace": "mono_class_get_namespace",
     "il2cpp_class_get_methods": "mono_class_get_methods",
     "il2cpp_class_get_method_from_name": "mono_class_get_method_from_name",
@@ -274,6 +275,7 @@ il2cpp_native_func_property = {
     "mono_class_from_name_case": (3, TYPE_VOID_P),
     "mono_class_from_name": (3, TYPE_VOID_P),
     "mono_class_get_name": (1, TYPE_CHAR_P),
+    "mono_class_get_flags": (1, TYPE_INT32),
     "mono_class_get_namespace": (1, TYPE_CHAR_P),
     "mono_class_get_methods": (2, TYPE_VOID_P),
     "mono_class_get_method_from_name": (3, TYPE_VOID_P),

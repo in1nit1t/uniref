@@ -1,4 +1,5 @@
 """ This module holds the uniref top-level classes for all supported platforms """
+import frida.core
 
 from uniref.mono.component import *
 from uniref.mono.injector import WinMonoInjector, AndroidMonoInjector
@@ -219,3 +220,12 @@ class AndroidUniRef(_UniRef):
         spawn: bool = True
     ) -> None:
         self._mono_injector = AndroidMonoInjector(process_name, package_name, device_id, spawn)
+
+    def execute_js(self, js_code: str, on_message_callback: Optional[Callable] = None) -> frida.core.Script:
+        """ inject javascript through ``Frida``.
+
+        :param js_code: javascript code
+        :param on_message_callback: callback in the form of **on_message(message, data)**
+        :return: ``frida.core.Script`` instance
+        """
+        return self._mono_injector.execute_js(js_code, on_message_callback)

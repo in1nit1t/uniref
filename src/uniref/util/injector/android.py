@@ -311,3 +311,10 @@ class AndroidInjector(Injector):
         else:
             nop = b"\xE0\x03\x00\xAA"
         return self.code_patch(nop * real_size, address)
+
+    def execute_js(self, js_code: str, on_message_callback: Optional[Callable]) -> frida.core.Script:
+        script = self._session.create_script(js_code)
+        if on_message_callback:
+            script.on("message", on_message_callback)
+        script.load()
+        return script

@@ -155,6 +155,7 @@ class MonoField:
         self._mono_type = 0
         self._field_type = 0
         self._type_name = ''
+        self._declaration = ''
         self._name = filed_name
 
     @property
@@ -261,6 +262,25 @@ class MonoField:
             self._type_name = self._mono_injector.mono_type_get_name(self.field_type)
         return self._type_name
 
+    @property
+    def declaration(self) -> str:
+        """ field declaration in C# """
+        if not self._declaration:
+            decorator = ''
+            if self.is_public():
+                if self.is_private():
+                    decorator += "protected "
+                else:
+                    decorator += "public "
+            elif self.is_private():
+                decorator += "private "
+            if self.is_const():
+                decorator += "const "
+            elif self.is_static():
+                decorator += "static "
+            self._declaration = f"{decorator}{self.type_name} {self.name};"
+        return self._declaration
+
     def is_const(self) -> bool:
         """ Check if the field is const. """
         return (self.flags & FIELD_ATTRIBUTE_LITERAL) != 0
@@ -268,6 +288,14 @@ class MonoField:
     def is_static(self) -> bool:
         """ Check if the field is static. """
         return (self.flags & (FIELD_ATTRIBUTE_STATIC | FIELD_ATTRIBUTE_HAS_FIELD_RVA)) != 0
+
+    def is_public(self) -> bool:
+        """ Check if the field is public. """
+        return (self.flags & FIELD_ATTRIBUTE_PUBLIC) != 0
+
+    def is_private(self) -> bool:
+        """ Check if the field is private. """
+        return (self.flags & FIELD_ATTRIBUTE_PRIVATE) != 0
 
 
 class MonoMethod:
@@ -325,6 +353,7 @@ class MonoMethod:
         self._flags = 0
         self._instance = 0
         self._signature = ''
+        self._declaration = ''
         self._name = method_name
         self._address = 0
 
@@ -393,6 +422,13 @@ class MonoMethod:
         return self._address
 
     @property
+    def offset(self) -> int:
+        """ method machine code offset relative to the module base (only for IL2CPP) """
+        if self._mono_injector.use_il2cpp:
+            return self.address - self._mono_injector.h_mono
+        return 0
+
+    @property
     def name(self) -> str:
         """ method name """
         if not self._name:
@@ -411,9 +447,40 @@ class MonoMethod:
         """ method return type name """
         return self.signature[:self.signature.index(' ')]
 
+    @property
+    def declaration(self) -> str:
+        """ method declaration in C# """
+        if not self._declaration:
+            decorator = ''
+            if self.is_public():
+                if self.is_private():
+                    decorator += "protected "
+                else:
+                    decorator += "public "
+            elif self.is_private():
+                decorator += "private "
+            if self.is_virtual():
+                decorator += "virtual "
+            if self.is_static():
+                decorator += "static "
+            self._declaration = decorator + self.signature.replace('(', self.name + '(') + " { }"
+        return self._declaration
+
     def is_static(self) -> bool:
         """ Check if the method is static. """
         return (self.flags & METHOD_ATTRIBUTE_STATIC) != 0
+
+    def is_public(self) -> bool:
+        """ Check if the method is public. """
+        return (self.flags & METHOD_ATTRIBUTE_PUBLIC) != 0
+
+    def is_private(self) -> bool:
+        """ Check if the method is private. """
+        return (self.flags & METHOD_ATTRIBUTE_PRIVATE) != 0
+
+    def is_virtual(self) -> bool:
+        """ Check if the method is virtual. """
+        return (self.flags & METHOD_ATTRIBUTE_VIRTUAL) != 0
 
     def native_patch(self, offset: int, code: str or bytes) -> NativePatch:
         """ Patch method machine code.
@@ -476,9 +543,11 @@ class MonoClass:
         else:
             self._image = None
 
+        self._flags = 0
         self._vtable = 0
         self._instance = 0
         self._parent = None
+        self._declaration = ''
         self._name = class_name
         self._namespace = class_namespace
 
@@ -486,6 +555,13 @@ class MonoClass:
     def handle(self) -> int:
         """ value as ``MonoClass*`` """
         return self._handle
+
+    @property
+    def flags(self) -> int:
+        """ class flags """
+        if not self._flags:
+            self._flags = self._mono_injector.mono_class_get_flags(self.handle)
+        return self._flags
 
     @property
     def instance(self) -> int:
@@ -505,7 +581,7 @@ class MonoClass:
         self._instance = value
 
     @property
-    def vtable(self):
+    def vtable(self) -> int:
         if not self._vtable:
             self._vtable = self._mono_injector.get_class_vtable(self.handle)
         return self._vtable
@@ -537,6 +613,31 @@ class MonoClass:
         if not self._namespace:
             self._namespace = self._mono_injector.get_class_namespace(self._handle)
         return self._namespace
+
+    @property
+    def declaration(self) -> str:
+        """ class declaration in C# """
+        if not self._declaration:
+            sb = f"// Namespace: {self.namespace}\nclass {self.name}"
+            if isinstance(self.parent, MonoClass):
+                sb += f" : {self.parent.name}"
+            sb += "\n{"
+
+            fields = self.list_fields()
+            if fields:
+                sb += f"\n\t// Fields"
+            for field in fields:
+                sb += f"\n\t{field.declaration} // {hex(field.offset)}"
+
+            methods = self.list_methods()
+            if methods:
+                d = '\n' if fields else ''
+                sb += f"{d}\n\t// Methods"
+            for method in methods:
+                sb += f"\n\n\t// Offset: {hex(method.offset)}\n\t{method.declaration}"
+            sb += "\n}"
+            self._declaration = sb
+        return self._declaration
 
     def list_fields(self) -> List[MonoField]:
         """ List all fields in class. """
@@ -669,6 +770,21 @@ class MonoImage:
         class_name = class_name.replace('+', '/')
         return self._mono_injector.find_class_in_image(self._handle, class_namespace, class_name)
 
+    def dump_declaration(self, save_to: str, show_progress: bool = True) -> None:
+        """ Dump all class declarations in the current image.
+
+        :param save_to: output file path
+        :param show_progress: whether to show the progress bar
+        """
+
+        classes = self.list_classes()
+        with open(save_to, 'w') as f:
+            if show_progress:
+                from tqdm import tqdm
+                classes = tqdm(classes, desc=f"Processing {self.name}")
+            for cls in classes:
+                f.write(cls.declaration + "\n\n")
+
 
 class MonoAssembly:
     """ ``MonoAssembly`` carries assembly reflection information. """
@@ -689,6 +805,14 @@ class MonoAssembly:
         if not self._image:
             self._image = self._mono_injector.get_assembly_image(self._handle)
         return self._image
+
+    def dump_declaration(self, save_to: str, show_progress: bool = True) -> None:
+        """ Dump all class declarations in the current assembly.
+
+        :param save_to: output file path
+        :param show_progress: whether to show the progress bar
+        """
+        self.image.dump_declaration(save_to, show_progress)
 
 
 class _MonoNativeError(Exception):

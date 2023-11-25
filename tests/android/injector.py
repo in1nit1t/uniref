@@ -9,7 +9,7 @@ class AndroidInjectorTest(InjectorTest):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.injector = AndroidInjector()
+        cls.injector = AndroidInjector(None, None, None, False)
         cls.mem = cls.injector.mem_alloc(alloc_size=4096)
 
     @classmethod

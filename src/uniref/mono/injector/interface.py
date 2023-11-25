@@ -91,6 +91,10 @@ class MonoInjector(Injector, metaclass=ABCMeta):
         ...
 
     @_register_mono_func
+    def mono_class_get_flags(self, klass: int) -> int:
+        ...
+
+    @_register_mono_func
     def mono_class_get_namespace(self, klass: int) -> str:
         ...
 
