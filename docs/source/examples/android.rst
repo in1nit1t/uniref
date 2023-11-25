@@ -18,15 +18,7 @@ Soul Knight
 
 您可以通过 `该链接 <http://www.chillyroom.com>`_ 进行下载。
 
-`示例代码2 <https://github.com/in1nit1t/uniref/blob/main/examples/android/il2cpp/Soul%20Knight.py>`_ 完成了类方法的 patch。
-
-
-Temple Run 2
-------------
-
-Google Play 上的应用，您可以通过 `该链接 <https://1drv.ms/u/s!AsGvxndj5W9qhCyopSbnVuZ1iLuP?e=Vhx1de>`_ 进行下载。
-
-`示例代码3 <https://github.com/in1nit1t/uniref/blob/main/examples/android/il2cpp/Temple%20Run%202.py>`_ 展示了如何生成与
+`示例代码2 <https://github.com/in1nit1t/uniref/blob/main/examples/android/il2cpp/Soul%20Knight.py>`_ 展示了如何生成与
 IL2CPPDumper 类似的 dump.cs 文件以及执行 frida 脚本。
 
 通过 ``MonoImage`` 或 ``MonoAssembly`` 类的 ``dump_declaration`` 方法可以完成一个程序集的 dump.cs 文件生成：
@@ -107,6 +99,14 @@ IL2CPPDumper 类似的 dump.cs 文件以及执行 frida 脚本。
         })
     });""".replace("ADDRESS", f"ptr({hex(get_skill_ready.address)})")
     ref.execute_js(code, on_message)
+
+
+Temple Run 2
+------------
+
+Google Play 上的应用，您可以通过 `该链接 <https://1drv.ms/u/s!AsGvxndj5W9qhCyopSbnVuZ1iLuP?e=Vhx1de>`_ 进行下载。
+
+`示例代码3 <https://github.com/in1nit1t/uniref/blob/main/examples/android/il2cpp/Temple%20Run%202.py>`_ 完成了类方法的 patch。
 
 
 Dream Blast
