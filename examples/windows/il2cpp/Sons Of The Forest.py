@@ -16,9 +16,10 @@ vitals.set_instance(vitals_instance)
 
 
 def energy_hack(toggle: bool):
-    cheats = ref.find_class_in_image("Sons.dll", "Cheats")
-    cheats.find_field("InfiniteEnergy").value = toggle
-    print("Now you should have unlimited energy")
+    cheats = ref.find_class_in_image("Sons.Settings.dll", "Sons.Settings.Cheats")
+    cheats.find_field("<InfiniteEnergy>k__BackingField").value = toggle
+    if toggle:
+        print("Now you should have unlimited energy")
 
 
 def ammo_hack():
@@ -26,7 +27,7 @@ def ammo_hack():
     for cls in sons.list_classes():
         if cls.name == "Ammo":
             remove = cls.find_method("Remove")
-            remove.native_nop(0xf1, 3)
+            remove.native_nop(0x181, 2)
             print("Now you should have unlimited ammo")
             break
 
@@ -46,7 +47,8 @@ def speed_hack(toggle: bool):
     fpc.find_field("_fallDamagePower").value = 0.0 if toggle else 2.0
     fpc.find_field("_fallDamageVelocity").value = 1000.0 if toggle else 16.0
 
-    print("You now run, crouch, and swim five times faster and are immune to fall damage.")
+    if toggle:
+        print("You now run, crouch, and swim five times faster and are immune to fall damage.")
 
 
 def strength_level_hack():
