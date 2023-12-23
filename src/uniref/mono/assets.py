@@ -185,6 +185,7 @@ mono_native_func_property = {
     "mono_class_from_name_case": (3, TYPE_VOID_P),
     "mono_class_from_name": (3, TYPE_VOID_P),
     "mono_class_get_name": (1, TYPE_CHAR_P),
+    "mono_class_get_flags": (1, TYPE_INT32),
     "mono_class_get_namespace": (1, TYPE_CHAR_P),
     "mono_class_get_methods": (2, TYPE_VOID_P),
     "mono_class_get_method_from_name": (3, TYPE_VOID_P),
